@@ -68,7 +68,7 @@ jobs:
           paths: [backend/node_modules]
           key: backend-test
 
-scan-frontend:
+  scan-frontend:
     docker:
       - image: circleci/node:13.8.0
     steps:
@@ -85,7 +85,7 @@ scan-frontend:
           paths: [frontend/node_modules]
           key: frontend-scan
 
-scan-backend:
+  scan-backend:
     docker:
       - image: circleci/node:13.8.0
     steps:
