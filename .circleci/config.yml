@@ -97,7 +97,7 @@ jobs:
           command: |
             cd backend
             npm i
-            npm audit --audit-level=critical
+            npm audit fix --audit-level=critical
       - save_cache:
           paths: [backend/node_modules]
           key: backend-scan
