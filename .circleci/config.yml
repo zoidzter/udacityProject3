@@ -20,8 +20,6 @@ jobs:
   build-frontend:
     docker:
       - image: circleci/node:13.8.0
-    environment:
-      STATUS: "pass"
     steps:
       - checkout
       - restore_cache:
@@ -35,13 +33,13 @@ jobs:
       - run:
           command: echo "updating Status to fail"
           environment:
-            STATUS: "fail"
+            BUILD_STATUS: "fail"
           when: on_fail
       - save_cache:
           paths: [frontend/node_modules]
           key: frontend-build
       - slack-notify:
-          buildstatus: ${STATUS}
+          buildstatus: $BUILD_STATUS
 
   build-backend:
     docker:
