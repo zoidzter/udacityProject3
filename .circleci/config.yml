@@ -13,7 +13,7 @@ commands:
     steps:
       - slack/notify:
           channel: C02GHDQACLU
-          event: fail
+          event: pass
           template: basic_fail_1
 
 jobs:
@@ -52,6 +52,7 @@ jobs:
       - save_cache:
           paths: [backend/node_modules]
           key: backend-build
+
   test-frontend:
     docker:
       - image: circleci/node:13.8.0
