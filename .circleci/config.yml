@@ -8,13 +8,13 @@ commands:
   slack-notify:
     description: Slack notification on failure
     parameters:
-      build-url:
+      build-status:
         type: string
     steps:
       - slack/notify:
           channel: C02GHDQACLU
-          event: pass
-          template: basic_fail_1
+          event: << parameters.build_status >>
+          template: basic_<< parameters.build_status >>_1
 
 jobs:
   build-frontend:
@@ -27,14 +27,18 @@ jobs:
       - run:
           name: Build front-end
           command: |
+            STATUS=pass
             cd frontend
             npm i
             npm run build
+      - run:
+          command: STATUS=fail
+          when: on_fail
       - save_cache:
           paths: [frontend/node_modules]
           key: frontend-build
       - slack-notify:
-          build-url: ${CIRCLE_BUILD_URL}
+          build-url: ${STATUS}
 
   build-backend:
     docker:
