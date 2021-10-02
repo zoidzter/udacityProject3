@@ -39,7 +39,7 @@ jobs:
           paths: [frontend/node_modules]
           key: frontend-build
       - slack-notify:
-          buildstatus: $BUILD_STATUS
+          buildstatus: ${BUILD_STATUS}
 
   build-backend:
     docker:
