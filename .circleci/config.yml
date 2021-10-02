@@ -20,6 +20,8 @@ jobs:
   build-frontend:
     docker:
       - image: circleci/node:13.8.0
+    environment:
+      STATUS: "pass"
     steps:
       - checkout
       - restore_cache:
@@ -30,8 +32,6 @@ jobs:
             cd frontend
             npm i
             npm run build
-          environment:
-            STATUS: "pass"
       - run:
           command: echo "updating Status to fail"
           environment:
