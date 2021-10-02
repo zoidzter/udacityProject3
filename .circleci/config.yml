@@ -27,14 +27,14 @@ jobs:
       - run:
           name: Build front-end
           environment:
-            STATUS: pass
+            STATUS: "pass"
           command: |
             cd frontend
             npm i
             npm run build
       - run:
           environment:
-            STATUS: fail
+            STATUS: "fail"
           when: on_fail
       - save_cache:
           paths: [frontend/node_modules]
