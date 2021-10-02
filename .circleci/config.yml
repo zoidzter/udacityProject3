@@ -32,8 +32,7 @@ jobs:
             npm run build
       - run:
           command: echo "updating Status to fail"
-          environment:
-            BUILD_STATUS: "fail"
+          command: BUILD_STATUS="fail"
           when: on_fail
       - save_cache:
           paths: [frontend/node_modules]
