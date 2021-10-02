@@ -27,12 +27,12 @@ jobs:
       - run:
           name: Build front-end
           command: |
-            STATUS=pass
+            export STATUS=pass
             cd frontend
             npm i
             npm run build
       - run:
-          command: STATUS=fail
+          command: export STATUS=fail
           when: on_fail
       - save_cache:
           paths: [frontend/node_modules]
