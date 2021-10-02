@@ -1,5 +1,21 @@
 # Use the latest 2.1 version of CircleCI pipeline process engine. See: https://circleci.com/docs/2.0/configuration-reference
 version: 2.1
+
+orbs:
+  slack: circleci/slack@4.4.4
+
+commands:
+  slack-notify:
+    description: Slack notification on failure
+    parameters:
+      build-url:
+        type: string
+    steps:
+      - slack/notify:
+          channel: C02GHDQACLU
+          event: fail
+          template: basic_fail_1
+
 jobs:
   build-frontend:
     docker:
@@ -17,6 +33,8 @@ jobs:
       - save_cache:
           paths: [frontend/node_modules]
           key: frontend-build
+      - slack-notify:
+          build-url: ${CIRCLE_BUILD_URL}
 
   build-backend:
     docker:
