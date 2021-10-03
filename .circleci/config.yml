@@ -7,6 +7,10 @@ orbs:
 commands:
   slack-notify-fail:
     description: Slack notification on failure
+    parameters:
+      status:
+        type: env_var_name
+      type:
     steps:
       - slack/notify:
           channel: C02GHDQACLU
@@ -35,7 +39,8 @@ jobs:
       - save_cache:
           paths: [frontend/node_modules]
           key: frontend-build
-      - slack-notify-fail
+      - slack-notify-fail:
+          status: ${BUILD_STATUS}
 
   build-backend:
     docker:
