@@ -10,16 +10,8 @@ commands:
     steps:
       - slack/notify:
           channel: C02GHDQACLU
-          event: fail
+          event: ${BUILD_STATUS}
           template: basic_fail_1
-  
-  slack-notify-pass:
-    description: Slack notification on success
-    steps:
-      - slack/notify:
-          channel: C02GHDQACLU
-          event: pass
-          template: basic_pass_1
 
 jobs:
   build-frontend:
@@ -43,7 +35,7 @@ jobs:
       - save_cache:
           paths: [frontend/node_modules]
           key: frontend-build
-      - slack-notify_${BUILD_STATUS}:
+      - slack-notify_fail:
 
   build-backend:
     docker:
