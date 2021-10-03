@@ -5,16 +5,21 @@ orbs:
   slack: circleci/slack@4.4.4
 
 commands:
-  slack-notify:
+  slack-notify-fail:
     description: Slack notification on failure
-    parameters:
-      buildstatus:
-        type: enum
     steps:
       - slack/notify:
           channel: C02GHDQACLU
-          event: << parameters.buildstatus >>
-          template: basic_<< parameters.buildstatus >>_1
+          event: fail
+          template: basic_fail_1
+  
+  slack-notify-pass:
+    description: Slack notification on success
+    steps:
+      - slack/notify:
+          channel: C02GHDQACLU
+          event: pass
+          template: basic_pass_1
 
 jobs:
   build-frontend:
@@ -38,8 +43,7 @@ jobs:
       - save_cache:
           paths: [frontend/node_modules]
           key: frontend-build
-      - slack-notify:
-          buildstatus: ${BUILD_STATUS}
+      - slack-notify_${BUILD_STATUS}:
 
   build-backend:
     docker:
