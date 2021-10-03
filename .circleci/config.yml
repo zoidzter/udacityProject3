@@ -9,7 +9,7 @@ commands:
     description: Slack notification on failure
     parameters:
       buildstatus:
-        type: string
+        type: enum
     steps:
       - slack/notify:
           channel: C02GHDQACLU
