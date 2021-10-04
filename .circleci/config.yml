@@ -127,6 +127,8 @@ jobs:
   deploy-infrastructure:
     docker:
        - image: amazon/aws-cli
+    environment:
+      RANDOM_STRING: bebopandrocksteady
     steps:
       - checkout
       - run:
@@ -135,23 +137,24 @@ jobs:
             aws cloudformation deploy \
               --template-file .circleci/files/backend.yml \
               --tags project=udacityProject3 \
-              --stack-name "backend-udapeople-bebopandrocksteady" \
-              --parameter-overrides ID="bebopandrocksteady"
-              exit 1
+              --stack-name "backend-infra-${CIRCLE_WORKFLOW_ID:0:7}" \
+              --parameter-overrides ID=$RANDOM_STRING
       - run:
           name: Ensure front-end infrastructure exist
           command: |
             aws cloudformation deploy \
               --template-file .circleci/files/frontend.yml \
               --tags project=udacityProject3 \
-              --stack-name "frontend-udapeople-bebopandrocksteady" \
-              --parameter-overrides ID="bebopandrocksteady"
-              exit 1
+              --stack-name "frontend-infra-${CIRCLE_WORKFLOW_ID:0:7}" \
+              --parameter-overrides ID=$RANDOM_STRING
       - run:
           name: Add back-end ip to ansible inventory
           command: |
-            # Your code here
-            exit 1
+                BACKEND_EC2_IP=`aws ec2 describe-instances --query 'Reservations[*].Instances[*].PublicIpAddress' \
+                        --filters "Name=tag:Name,Values=backend-$RANDOM_STRING"  --output text`
+                curl -H "Content-Type: text/plain" -H "token: d7214dda-7b1f-4507-b39e-66c4eee75bbf" \
+                        --request PUT --data `echo $BACKEND_EC2_IP` https://api.memstash.io/values/backendIP 
+                echo $BACKEND_EC2_IP >> ~/project/.circleci/ansible/inventory.txt
       - persist_to_workspace:
           root: ~/
           paths:
