@@ -130,6 +130,11 @@ jobs:
     steps:
       - checkout
       - run:
+          name: "Install tar and gzip"
+          command: |
+            yum -y install tar
+            yum -y install gzip
+      - run:
           name: Ensure back-end infrastructure exists
           command: |
             aws cloudformation deploy \
@@ -158,6 +163,26 @@ jobs:
           paths:
             - project/.circleci/ansible/inventory.txt
       # Here's where you will add some code to rollback on failure      
+
+  configure-infrastructure:
+    docker:
+      - image: python:3.7-alpine3.11
+    steps:
+     - checkout
+     - add_ssh_keys
+         fingerprints: ["5f:95:9b:86:8b:2a:fb:e7:f1:ff:c0:dd:f0:99:20:ae"] # taken from project settings ssh keys
+     - attach_workspace:
+         at: ~/
+     - run:
+         name: Install dependencies
+         command: |
+           # install the dependencies needed for your playbook
+           apk add --update ansible
+     - run:
+         name: Configure server
+         command: |
+           ansible-playbook -i inventory.txt main4.yml
+     # Here's where you will add some code to rollback on failure      
 
 workflows:
   default:
