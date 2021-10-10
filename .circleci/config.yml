@@ -10,14 +10,15 @@ commands:
       - run:
           name: AWS CLI setup
           command: |
-            sudo apt-get update
-            sudo apt-get install awscli -y
+            curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+            unzip awscliv2.zip
+            ./aws/install
       - run:
           name: Destroy Environment on Fail
           when: on_fail
           command: |
-            aws cloud-formation delete-stack --stack-name "backend-infra-${CIRCLE_WORKFLOW_ID:0:7}"
-            aws cloud-formation delete-stack --stack-name "frontend-infra-${CIRCLE_WORKFLOW_ID:0:7}"
+            aws cloudformation delete-stack --stack-name "backend-infra-${CIRCLE_WORKFLOW_ID:0:7}"
+            aws cloudformation delete-stack --stack-name "frontend-infra-${CIRCLE_WORKFLOW_ID:0:7}"
 
 jobs:
   build-frontend:
@@ -47,7 +48,6 @@ jobs:
       - slack/notify:
           event: pass
           template: basic_success_1
-      - destroy-env
 
   build-backend:
     docker:
@@ -71,7 +71,6 @@ jobs:
       - slack/notify:
           event: pass
           template: basic_success_1
-      - destroy-env
 
   test-frontend:
     docker:
@@ -89,7 +88,6 @@ jobs:
       - save_cache:
           paths: [frontend/node_modules]
           key: frontend-test
-      - destroy-env
 
   test-backend:
     docker:
@@ -107,7 +105,6 @@ jobs:
       - save_cache:
           paths: [backend/node_modules]
           key: backend-test
-      - destroy-env
 
   scan-frontend:
     docker:
@@ -125,7 +122,6 @@ jobs:
       - save_cache:
           paths: [frontend/node_modules]
           key: frontend-scan
-      - destroy-env
 
   scan-backend:
     docker:
@@ -143,7 +139,6 @@ jobs:
       - save_cache:
           paths: [backend/node_modules]
           key: backend-scan
-      - destroy-env
 
   deploy-infrastructure:
     docker:
@@ -266,7 +261,7 @@ jobs:
           command: |
             # your code here
       - destroy-env  
-      
+
 workflows:
   default:
     jobs:
