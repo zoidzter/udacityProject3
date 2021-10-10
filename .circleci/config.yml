@@ -3,7 +3,17 @@ version: 2.1
 
 orbs:
   slack: circleci/slack@4.4.4
-  
+
+commands:
+  destroy-env:
+    steps:
+      - run:
+          name: Destroy Environment on Fail
+          when: on_fail
+          command: |
+            aws cloud-formation delete-stack --stack-name "backend-infra-${CIRCLE_WORKFLOW_ID:0:7}"
+            aws cloud-formation delete-stack --stack-name "frontend-infra-${CIRCLE_WORKFLOW_ID:0:7}"
+
 jobs:
   build-frontend:
     docker:
@@ -32,6 +42,7 @@ jobs:
       - slack/notify:
           event: pass
           template: basic_success_1
+      - destroy-env
 
   build-backend:
     docker:
@@ -55,7 +66,8 @@ jobs:
       - slack/notify:
           event: pass
           template: basic_success_1
-          
+      - destroy-env
+
   test-frontend:
     docker:
       - image: circleci/node:13.8.0
@@ -72,6 +84,7 @@ jobs:
       - save_cache:
           paths: [frontend/node_modules]
           key: frontend-test
+      - destroy-env
 
   test-backend:
     docker:
@@ -89,6 +102,7 @@ jobs:
       - save_cache:
           paths: [backend/node_modules]
           key: backend-test
+      - destroy-env
 
   scan-frontend:
     docker:
@@ -106,6 +120,7 @@ jobs:
       - save_cache:
           paths: [frontend/node_modules]
           key: frontend-scan
+      - destroy-env
 
   scan-backend:
     docker:
@@ -123,6 +138,7 @@ jobs:
       - save_cache:
           paths: [backend/node_modules]
           key: backend-scan
+      - destroy-env
 
   deploy-infrastructure:
     docker:
@@ -162,7 +178,7 @@ jobs:
           root: ~/
           paths:
             - project/.circleci/ansible/inventory.txt
-      # Here's where you will add some code to rollback on failure      
+      - destroy-env      
 
   configure-infrastructure:
     docker:
@@ -176,12 +192,31 @@ jobs:
      - run:
          name: Install dependencies
          command: |
-           # install the dependencies needed for your playbook
            apk add --update ansible
      - run:
          name: Configure server
          command: |
            ansible-playbook -i ~/inventory.txt .circleci/ansible/configure-server.yml
+     - destroy-env     
+
+  run-migrations:
+    docker:
+      - image: circleci/node:13.8.0
+    steps:
+      - checkout
+      - run:
+          name: Run migrations
+          command: |
+            cd backend
+            npm install
+            MIGRATION_RES=`npm run migrations`
+            echo "MIGRATION RESULT OUTPUT: $MIGRATION_RES"
+      - run:
+          name: Send migration results to memstash
+          command: |
+            curl -H "Content-Type: text/plain" -H "token: 333a9d13-006e-4b7d-9796-e6f757ff0ed8" --request \
+              PUT --data `echo $MIGRATION_RES` https://api.memstash.io/values/migrationRes
+    - destroy_env        
      # Here's where you will add some code to rollback on failure      
 
 workflows:
@@ -206,4 +241,7 @@ workflows:
           #filters:
           #  branches:
           #    only: [test-feature-branch]
+      - configure-infrastructure:
+          requires:
+            - deploy-infrastructure
   
