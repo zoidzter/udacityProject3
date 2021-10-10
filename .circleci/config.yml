@@ -225,7 +225,7 @@ jobs:
               PUT --data `echo $MIGRATION_RES` https://api.memstash.io/values/migrationRes
       - destroy-env        
 
-deploy-frontend:
+  deploy-frontend:
     docker:
       - image: amazon/aws-cli
     steps:
@@ -245,15 +245,15 @@ deploy-frontend:
           name: Deploy frontend objects
           command: |
             cd frontend
-      - destroy-env      
-                    
+      - destroy-env
+                 
   deploy-backend:
     docker:
       - image: python:3.7-alpine3.11
     steps:
       - checkout
       - add_ssh_keys:
-          fingerprints: 
+          fingerprints:
             - "5f:95:9b:86:8b:2a:fb:e7:f1:ff:c0:dd:f0:99:20:ae"
      - attach_workspace:
          at: ~/
