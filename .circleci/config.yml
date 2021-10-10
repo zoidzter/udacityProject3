@@ -216,7 +216,7 @@ jobs:
           command: |
             curl -H "Content-Type: text/plain" -H "token: 333a9d13-006e-4b7d-9796-e6f757ff0ed8" --request \
               PUT --data `echo $MIGRATION_RES` https://api.memstash.io/values/migrationRes
-      - destroy_env        
+      - destroy-env        
         
 
 workflows:
