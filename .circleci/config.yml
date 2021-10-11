@@ -213,8 +213,7 @@ jobs:
           command: |
             cd backend
             npm install
-            npm run migrations
-            MIGRATION_RES= `grep "$Migration" migration.log | grep "executed successfully.$" | wc -l`
+            MIGRATION_RES=$(npm run migrations)
             echo "MIGRATION RESULT OUTPUT: $MIGRATION_RES"
       - run:
           name: Send migration results to memstash
