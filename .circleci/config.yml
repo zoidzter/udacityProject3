@@ -176,6 +176,7 @@ jobs:
                 curl -H "Content-Type: text/plain" -H "token: d7214dda-7b1f-4507-b39e-66c4eee75bbf" \
                         --request PUT --data `echo $BACKEND_EC2_IP` https://api.memstash.io/values/backendIP 
                 echo $BACKEND_EC2_IP >> ~/project/.circleci/ansible/inventory.txt
+                echo "BACKEND_EC2_IP: " $BACKEND_EC2_IP
       - persist_to_workspace:
           root: ~/
           paths:
@@ -242,6 +243,12 @@ jobs:
           name: Deploy frontend objects
           command: |
             cd frontend
+            npm install
+            npm run build
+      - run:
+          name: S3 copy objects
+          command: |
+            aws s3 cp ./dist/* s3://udapeople-${CIRCLE_WORKFLOW_ID:0:7}
       - destroy-env
                  
   deploy-backend:
