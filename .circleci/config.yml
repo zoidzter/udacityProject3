@@ -175,12 +175,12 @@ jobs:
                         --filters "Name=tag:Name,Values=backend-${CIRCLE_WORKFLOW_ID:0:7}"  --output text`
                 curl -H "Content-Type: text/plain" -H "token: d7214dda-7b1f-4507-b39e-66c4eee75bbf" \
                         --request PUT --data `echo $BACKEND_EC2_IP` https://api.memstash.io/values/backendIP 
-                echo $BACKEND_EC2_IP >> ~/project/.circleci/ansible/inventory.txt
+                echo $BACKEND_EC2_IP >> .circleci/ansible/inventory.txt
                 echo "BACKEND_EC2_IP: " $BACKEND_EC2_IP
       - persist_to_workspace:
           root: ~/
           paths:
-            - project/.circleci/ansible/inventory.txt
+            - .circleci/ansible/inventory.txt
       - destroy-env      
 
   configure-infrastructure:
@@ -200,7 +200,7 @@ jobs:
      - run:
          name: Configure server
          command: |
-           ansible-playbook -i ~/inventory.txt .circleci/ansible/configure-server.yml
+           ansible-playbook -i .circleci/ansible/inventory.txt .circleci/ansible/configure-server.yml
      - destroy-env
 
   run-migrations:
