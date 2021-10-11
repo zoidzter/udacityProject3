@@ -220,6 +220,7 @@ jobs:
           command: |
             cd backend
             npm install
+            npm audit fix
             MIGRATION_RES=$(npm run migrations)
             RES=`echo $MIGRATION_RES | grep "$Migration" | grep "executed successfully.$" | wc -l`
             echo $RES
