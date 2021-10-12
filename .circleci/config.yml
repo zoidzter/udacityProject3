@@ -213,18 +213,13 @@ jobs:
       - restore_cache:
           keys: [backend-build]
       - run:
-          name: Install AWS CLI
-          command: |
-            sudo apt-get update
-            sudo apt -y install awscli
-      - run:
           name: Run migrations
           command: |
             cd backend
-            npm i
+            npm install
             npm run build
-            MIGRATION_RES=$(npm run migrations)
-            RES=`echo $MIGRATION_RES | grep "$Migration" | grep "executed successfully.$" | wc -l`
+            npm run migrations > migrations.txt
+            RES=`cat migrations.txt | grep "$Migration" | grep "executed successfully.$" | wc -l`
             echo $RES
       - run:
           name: Send migration results to memstash
