@@ -218,9 +218,6 @@ jobs:
             cd backend
             npm install
             npm run build
-            npm run migrations > migrations.txt
-            RES=`cat migrations.txt | grep "$Migration" | grep "executed successfully.$" | wc -l`
-            echo $RES
       - run:
           name: Send migration results to memstash
           command: |
