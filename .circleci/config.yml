@@ -213,9 +213,9 @@ jobs:
             npm run migrations > runMigrations.log
             if [ 1 -eq $(grep -c "has been executed successfully" runMigrations.log) ]
             then
-              curl -H "Content-Type: text/plain" -H "token: 5896d49f-b694-45ca-b7ef-41d58a86e495" --request PUT --data "1" https://api.memstash.io/values/migration_${CIRCLE_WORKFLOW_ID:0:7}
+              curl -H "Content-Type: text/plain" -H "token: 5896d49f-b694-45ca-b7ef-41d58a86e495" --request PUT --data "1" https://api.memstash.io/values/migration_12345
             else
-              curl -H "Content-Type: text/plain" -H "token: 5896d49f-b694-45ca-b7ef-41d58a86e495" --request PUT --data "0" https://api.memstash.io/values/migration_${CIRCLE_WORKFLOW_ID:0:7}
+              curl -H "Content-Type: text/plain" -H "token: 5896d49f-b694-45ca-b7ef-41d58a86e495" --request PUT --data "0" https://api.memstash.io/values/migration_12345
             fi
       - destroy-env        
 
