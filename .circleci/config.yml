@@ -219,10 +219,10 @@ jobs:
             npm install
             npm run build
             MIGRATION_RES=$(npm run migrations)
-            RES=$(echo $MIGRATION_RES | grep "Migration" | grep -c "executed successfully")
       - run:
           name: Send migration results to memstash
           command: |
+            RES=`echo ${MIGRATION_RES} | grep "Migration" | grep -c "executed successfully"`
             echo "RES value to send to memstash: $RES"
             curl -H "Content-Type: text/plain" -H "token: 333a9d13-006e-4b7d-9796-e6f757ff0ed8" \
                 --request PUT --data `echo $RES` https://api.memstash.io/values/migrationRes
