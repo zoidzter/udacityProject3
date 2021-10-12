@@ -219,7 +219,7 @@ jobs:
             npm install
             npm run build
             MIGRATION_RES=$(npm run migrations)
-            echo $MIGRATION_RES
+            RES=`echo $MIGRATION_RES | grep -c "executed successfully"`
       - run:
           name: Send migration results to memstash
           command: |
