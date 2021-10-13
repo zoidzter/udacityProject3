@@ -245,6 +245,7 @@ jobs:
       - run:
           name: S3 copy objects
           command: |
+            cd frontend
             aws s3 cp ./dist s3://udapeople-${CIRCLE_WORKFLOW_ID:0:7} --recursive
       - destroy-env
                  
