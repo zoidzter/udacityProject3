@@ -24,13 +24,30 @@
     path: ~/backend
     state: directory
 
-- name: "copy and unzip backend files"
-  unarchive:
-    src: ~/project/backend/dist.zip
-    dest: /home/ubuntu/backend/
+- name: "copy backend files"
+  copy:
+    src: ~/project/backend
+    dest: /home/ubuntu/
 
-- name: "startup"
+- name: Install Node 
   shell: |
-    cd ~/backend
-    pm2 start npm --name api -- start
-    pm2 ls
+    cd /home/ubuntu/backend
+    npm install
+    
+- name: Build package
+  shell: |
+    cd /home/ubuntu/backend
+    npm run build
+    cat .env
+    npm run prestart:prod
+
+- name: Start PM2
+  shell: |
+    cd /home/ubuntu/backend
+    pm2 start npm --no-automation --name "backend" -- run start
+
+- name: start pm2 for dist/main.js
+  become: no
+  shell: pm2 start main.js
+  args:
+    chdir: /home/ubuntu/backend/dist
