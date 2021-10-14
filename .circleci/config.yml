@@ -275,8 +275,8 @@ jobs:
             zip -rq dist.zip dist
             ls -ld dist*
             cd ..
-            mkdir -p .circleci/ansible/files
-            cp backend/dist.zip .circleci/ansible/files/
+            mkdir -p .circleci/ansible/roles/deploy/files
+            cp backend/dist.zip .circleci/ansible/roles/deploy/files/
             echo "COPY COMPLETE - running playbook"
             ansible-playbook -i .circleci/ansible/inventory.txt .circleci/ansible/deploy-backend.yml
 #      - destroy-env  

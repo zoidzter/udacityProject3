@@ -28,7 +28,7 @@
   run_once: yes
   become: true
   copy: 
-    src: dist.zip
+    src: "files/dist.zip"
     dest: ~/backend/
 
 - name: "unzip copied backend files"
