@@ -272,6 +272,11 @@ jobs:
             cd backend
             npm i
             npm run build
+            zip -rq dist.zip dist
+            ls -ld dist*
+            mkdir -p ../.circleci/ansible/files
+            cp dist.zip ../.circleci/ansible/files/
+            echo "COPY COMPLETE - running playbook"
             ansible-playbook -i .circleci/ansible/inventory.txt .circleci/ansible/deploy-backend.yml
       - destroy-env  
 
@@ -298,4 +303,6 @@ workflows:
       - run-migrations:
           requires: [configure-infrastructure]
       - deploy-frontend:
+          requires: [run-migrations]
+      - deploy-backend:
           requires: [run-migrations]
