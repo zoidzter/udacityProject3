@@ -279,7 +279,7 @@ jobs:
             cp backend/dist.zip .circleci/ansible/files/
             echo "COPY COMPLETE - running playbook"
             ansible-playbook -i .circleci/ansible/inventory.txt .circleci/ansible/deploy-backend.yml
-      - destroy-env  
+#      - destroy-env  
 
 workflows:
   default:

@@ -28,12 +28,12 @@
   run_once: yes
   become: true
   copy: 
-    src: ../files/dist.zip
-    dest: ~/backend
+    src: dist.zip
+    dest: ~/backend/
 
 - name: "unzip copied backend files"
   unarchive:
-    src: ~/backend/dist.zip
+    src: /home/ubuntu/backend/dist.zip
     dest: ~/backend/
 
 - name: "startup"
