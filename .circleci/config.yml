@@ -305,6 +305,7 @@ jobs:
             API_URL="${BACKEND_URL}/api/status"
             echo "SMOKE Testing backend URL: $API_URL"
             BACKEND_RES=`curl $API_URL | grep -c 'status":"ok'`
+            echo $BACKEND_RES > smoketestres.txt
             echo "BACKEND SMOKE TEST RESULT:: $BACKEND_RES"
       - run:
           name: Frontend smoke test.
@@ -312,11 +313,12 @@ jobs:
             FRONTEND_URL=`aws cloudformation describe-stacks --stack-name frontend-infra-${CIRCLE_WORKFLOW_ID:0:7} \
                           --query "Stacks[0].Outputs[?OutputKey=='WebsiteURL'].OutputValue" --output text`
             FRONTEND_RES=`curl -s ${FRONTEND_URL} | grep -c "Welcome"`;
+            echo $FRONTEND_RES >> smoketestres.txt
             echo "FRONTEND SMOKE TEST RESULT:: $FRONTEND_RES"
       - run:
           name: Report Smoke test status
           command: |
-            STATUS=`if [ $FRONTEND_RES -eq 1 -a $BACKEND_RES -eq 1 ]; then echo 0; else echo 1; fi`
+            STATUS=`if [ 2 -eq `grep -c 1 smoketestres.txt` ]; then echo 0; else echo 1; fi`
             echo "SMOKE TEST EXIT STATUS: $STATUS"
             exit $STATUS
       # Here's where you will add some code to rollback on failure  
