@@ -20,7 +20,6 @@ commands:
             aws cloudformation delete-stack --stack-name "frontend-infra-${CIRCLE_WORKFLOW_ID:0:7}"
   
   revert-migrations:
-    description: Revert the last migration 
     steps:
       - run:
           name: Revert migrations
@@ -34,8 +33,7 @@ commands:
               npm install
               npm run migrations:revert
             fi
-          when: on_fail
-
+            
 jobs:
   build-frontend:
     docker:
