@@ -295,26 +295,32 @@ jobs:
       - run:
           name: Install dependencies
           command: |
-            apk add --update cur
+            apk add --update curl
       - run:
           name: Get backend url
           command: |
-            backendURL=`curl -H "Content-Type: text/plain" -H "token: d7214dda-7b1f-4507-b39e-66c4eee75bbf" \
+            BACKEND_URL=`curl -H "Content-Type: text/plain" -H "token: d7214dda-7b1f-4507-b39e-66c4eee75bbf" \
                         --request GET https://api.memstash.io/values/backendURL`
       - run:
           name: Backend smoke test.
           command: |
-            APIURL="$backendURL/api/status"
-            echo "SMOKE Testing backend URL: $APIURL"
-            BACKEND_RES=`curl $APIURL`
+            API_URL="$BACKEND_URL/api/status"
+            echo "SMOKE Testing backend URL: $API_URL"
+            BACKEND_RES=`curl $API_URL | grep -c 'status":"ok'`
             echo "BACKEND SMOKE TEST RESULT:: $BACKEND_RES"
       - run:
           name: Frontend smoke test.
           command: |
-            frontendURL=`aws cloudformation describe-stacks --stack-name frontend-infra-${CIRCLE_WORKFLOW_ID:0:7} \
+            FRONTEND_URL=`aws cloudformation describe-stacks --stack-name frontend-infra-${CIRCLE_WORKFLOW_ID:0:7} \
                           --query "Stacks[0].Outputs[?OutputKey=='WebsiteURL'].OutputValue" --output text`
-            FRONTEND`curl -s ${URL} | grep -c "Welcome"`;
+            FRONTEND_RES=`curl -s ${URL} | grep -c "Welcome"`;
             echo "FRONTEND SMOKE TEST RESULT:: $FRONTEND_RES"
+      - run:
+          name: Report Smoke test status
+          command: |
+            STATUS=`IF [ $FRONTEND_RES -eq 1 -a $BACKEND_RES -eq 1 ]; then 0; else 1
+            echo "SMOKE TEST STATUS: $STATUS"
+            exit $STATUS
       # Here's where you will add some code to rollback on failure  
 
 workflows:
