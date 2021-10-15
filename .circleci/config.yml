@@ -235,6 +235,8 @@ jobs:
             BACKEND_IP=`curl -H "Content-Type: text/plain" -H "token: d7214dda-7b1f-4507-b39e-66c4eee75bbf" \
                         --request GET https://api.memstash.io/values/backendIP`
             export API_URL="http://${BACKEND_IP}:3030"
+            curl -H "Content-Type: text/plain" -H "token: d7214dda-7b1f-4507-b39e-66c4eee75bbf" \
+                        --request PUT --data `echo $API_URL` https://api.memstash.io/values/backendURL
             echo "${API_URL}"
       - run:
           name: Deploy frontend objects
@@ -283,7 +285,37 @@ jobs:
           name: Deploy backend
           command: |
             ansible-playbook -i .circleci/ansible/inventory.txt .circleci/ansible/deploy-backend.yml
-#      - destroy-env  
+      - destroy-env  
+
+ smoke-test:
+    docker:
+      - image: python:3.7-alpine3.11 
+    steps:
+      - checkout
+      - run:
+          name: Install dependencies
+          command: |
+            apk add --update cur
+      - run:
+          name: Get backend url
+          command: |
+            backendURL=`curl -H "Content-Type: text/plain" -H "token: d7214dda-7b1f-4507-b39e-66c4eee75bbf" \
+                        --request GET https://api.memstash.io/values/backendURL`
+      - run:
+          name: Backend smoke test.
+          command: |
+            APIURL="$backendURL/api/status"
+            echo "SMOKE Testing backend URL: $APIURL"
+            BACKEND_RES=`curl $APIURL`
+            echo "BACKEND SMOKE TEST RESULT:: $BACKEND_RES"
+      - run:
+          name: Frontend smoke test.
+          command: |
+            frontendURL=`aws cloudformation describe-stacks --stack-name frontend-infra-${CIRCLE_WORKFLOW_ID:0:7} \
+                          --query "Stacks[0].Outputs[?OutputKey=='WebsiteURL'].OutputValue" --output text`
+            FRONTEND`curl -s ${URL} | grep -c "Welcome"`;
+            echo "FRONTEND SMOKE TEST RESULT:: $FRONTEND_RES"
+      # Here's where you will add some code to rollback on failure  
 
 workflows:
   default:
