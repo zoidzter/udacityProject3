@@ -298,13 +298,10 @@ jobs:
             apk add --update curl
             pip install awscli
       - run:
-          name: Get backend url
+          name: Backend smoke test.
           command: |
             BACKEND_URL=`curl -H "Content-Type: text/plain" -H "token: d7214dda-7b1f-4507-b39e-66c4eee75bbf" \
                         --request GET https://api.memstash.io/values/backendURL`
-      - run:
-          name: Backend smoke test.
-          command: |
             API_URL="${BACKEND_URL}/api/status"
             echo "SMOKE Testing backend URL: $API_URL"
             BACKEND_RES=`curl $API_URL | grep -c 'status":"ok'`
