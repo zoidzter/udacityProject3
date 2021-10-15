@@ -9,11 +9,32 @@ commands:
   destroy-env:
     steps:
       - run:
+          name: Force removal of S3 buckets (PRE step for stack delete)
+          when: on_fail
+          command: aws s3 rb s3://udapeople-${CIRCLE_WORKFLOW_ID:0:7} --force
+      - run:
           name: Destroy Environment on Fail
           when: on_fail
           command: |
             aws cloudformation delete-stack --stack-name "backend-infra-${CIRCLE_WORKFLOW_ID:0:7}"
             aws cloudformation delete-stack --stack-name "frontend-infra-${CIRCLE_WORKFLOW_ID:0:7}"
+  
+  revert-migrations:
+    description: Revert the last migration 
+    steps:
+      - run:
+          name: Revert migrations
+          when: on_fail
+          command: |
+            SUCCESS=`curl -H "Content-Type: text/plain" -H "token: ${CIRCLE_WORKFLOW_ID}" \
+                  --request PUT --data "0" https://api.memstash.io/values/migrationStatus`
+            if [ $SUCCESS -eq 1 ]; 
+            then
+              cd ~/project/backend
+              npm install
+              npm run migrations:revert
+            fi
+          when: on_fail
 
 jobs:
   build-frontend:
@@ -166,7 +187,7 @@ jobs:
           command: |
                 BACKEND_EC2_IP=`aws ec2 describe-instances --query 'Reservations[*].Instances[*].PublicIpAddress' \
                         --filters "Name=tag:Name,Values=backend-${CIRCLE_WORKFLOW_ID:0:7}"  --output text`
-                curl -H "Content-Type: text/plain" -H "token: d7214dda-7b1f-4507-b39e-66c4eee75bbf" \
+                curl -H "Content-Type: text/plain" -H "token: ${CIRCLE_WORKFLOW_ID}" \
                         --request PUT --data `echo $BACKEND_EC2_IP` https://api.memstash.io/values/backendIP 
                 echo $BACKEND_EC2_IP >> .circleci/ansible/inventory.txt
                 echo "BACKEND_EC2_IP: " $BACKEND_EC2_IP
@@ -213,11 +234,14 @@ jobs:
             npm run migrations > runMigrations.log
             if [ 1 -eq $(grep -c "has been executed successfully" runMigrations.log) ]
             then
-              curl -H "Content-Type: text/plain" -H "token: 5896d49f-b694-45ca-b7ef-41d58a86e495" --request PUT --data "1" https://api.memstash.io/values/migration_12345
+              curl -H "Content-Type: text/plain" -H "token: ${CIRCLE_WORKFLOW_ID}" \
+                  --request PUT --data "1" https://api.memstash.io/values/migrationStatus
             else
-              curl -H "Content-Type: text/plain" -H "token: 5896d49f-b694-45ca-b7ef-41d58a86e495" --request PUT --data "0" https://api.memstash.io/values/migration_12345
+              curl -H "Content-Type: text/plain" -H "token: ${CIRCLE_WORKFLOW_ID}" \
+                  --request PUT --data "0" https://api.memstash.io/values/migrationStatus
             fi
-      - destroy-env        
+      - destroy-env
+      - revert-migrations 
 
   deploy-frontend:
     docker:
@@ -232,10 +256,10 @@ jobs:
       - run:
           name: Get backend url
           command: |
-            BACKEND_IP=`curl -H "Content-Type: text/plain" -H "token: d7214dda-7b1f-4507-b39e-66c4eee75bbf" \
+            BACKEND_IP=`curl -H "Content-Type: text/plain" -H "token: ${CIRCLE_WORKFLOW_ID}" \
                         --request GET https://api.memstash.io/values/backendIP`
             export API_URL="http://${BACKEND_IP}:3030"
-            curl -H "Content-Type: text/plain" -H "token: d7214dda-7b1f-4507-b39e-66c4eee75bbf" \
+            curl -H "Content-Type: text/plain" -H "token: ${CIRCLE_WORKFLOW_ID}" \
                         --request PUT --data `echo $API_URL` https://api.memstash.io/values/backendURL
             echo "${API_URL}"
       - run:
@@ -250,6 +274,7 @@ jobs:
             cd frontend
             aws s3 cp ./dist s3://udapeople-${CIRCLE_WORKFLOW_ID:0:7} --recursive
       - destroy-env
+      - revert-migrations
                  
   deploy-backend:
     docker:
@@ -285,7 +310,8 @@ jobs:
           name: Deploy backend
           command: |
             ansible-playbook -i .circleci/ansible/inventory.txt .circleci/ansible/deploy-backend.yml
-      - destroy-env  
+      - destroy-env
+      - revert-migrations
 
   smoke-test:
     docker:
@@ -300,7 +326,7 @@ jobs:
       - run:
           name: Backend smoke test.
           command: |
-            BACKEND_URL=`curl -H "Content-Type: text/plain" -H "token: d7214dda-7b1f-4507-b39e-66c4eee75bbf" \
+            BACKEND_URL=`curl -H "Content-Type: text/plain" -H "token: ${CIRCLE_WORKFLOW_ID}" \
                         --request GET https://api.memstash.io/values/backendURL`
             API_URL="${BACKEND_URL}/api/status"
             echo "SMOKE Testing backend URL: $API_URL"
@@ -321,7 +347,8 @@ jobs:
             STATUS=$(if [ 2 -eq `grep -c 1 smoketestres.txt` ]; then echo 0; else echo 1; fi)
             echo "SMOKE TEST EXIT STATUS: $STATUS"
             exit $STATUS
-      # Here's where you will add some code to rollback on failure  
+      - destroy-env
+      - revert-migrations
 
 workflows:
   default:
