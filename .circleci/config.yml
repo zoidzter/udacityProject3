@@ -341,6 +341,7 @@ jobs:
           command: |
             FRONTEND_URL=`aws cloudformation describe-stacks --stack-name frontend-infra-${CIRCLE_WORKFLOW_ID:0:7} \
                           --query "Stacks[0].Outputs[?OutputKey=='WebsiteURL'].OutputValue" --output text`
+            echo "FRONTEND_URL: " $FRONTEND_URL
             FRONTEND_RES=`curl -s ${FRONTEND_URL} | grep -c "Welcome"`;
             echo $FRONTEND_RES >> smoketestres.txt
             echo "FRONTEND SMOKE TEST RESULT:: $FRONTEND_RES"
