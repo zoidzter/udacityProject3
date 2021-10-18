@@ -380,7 +380,7 @@ jobs:
       - destroy-env
       - revert-migrations
 
-cleanup:
+  cleanup:
     docker:
       - image: amazon/aws-cli
     steps:
