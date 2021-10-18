@@ -397,13 +397,10 @@ jobs:
       - attach_workspace:
           at: ~/
       - run:
-          name: Get old stack workflow id
+          name: AWS cleanup of Old Stack
           command: |
-            export OldWorkflowID=`cat ./.circleci/oldstackid.txt`
+            OldWorkflowID=`cat ./.circleci/oldstackid.txt`
             echo "OLD STACK ID FOR DELETION: $OldWorkflowID"
-      - run:
-          name: AWS cleanup
-          command: |
             aws s3 rb s3://udapeople-$OldWorkflowID --force
             aws cloudformation delete-stack --stack-name "backend-infra-$OldWorkflowID"
             aws cloudformation delete-stack --stack-name "frontend-infra-$OldWorkflowID"
