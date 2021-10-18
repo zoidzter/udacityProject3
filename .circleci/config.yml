@@ -15,9 +15,11 @@ commands:
     steps:
       - run:
           name: Force removal of S3 buckets (PRE step for stack delete)
+          when: on_fail
           command: aws s3 rb s3://udapeople-${CIRCLE_WORKFLOW_ID:0:7} --force
       - run:
           name: Destroy Environment on Fail
+          when: on_fail
           command: |
             aws cloudformation delete-stack --stack-name "backend-infra-${CIRCLE_WORKFLOW_ID:0:7}"
             aws cloudformation delete-stack --stack-name "frontend-infra-${CIRCLE_WORKFLOW_ID:0:7}"
@@ -196,8 +198,7 @@ jobs:
          root: ~/
          paths:
            - project/.circleci/ansible/inventory.txt
-     - destroy-env
-         when: on_fail    
+     - destroy-env  
 
   configure-infrastructure:
     docker:
@@ -219,7 +220,6 @@ jobs:
          command: |
            ansible-playbook -i .circleci/ansible/inventory.txt .circleci/ansible/configure-server.yml
      - destroy-env
-         when: on_fail
 
   run-migrations:
     docker:
@@ -244,7 +244,6 @@ jobs:
                   --request PUT --data "0" https://api.memstash.io/values/migrationStatus
             fi
       - destroy-env
-          when: on_fail
       - revert-migrations 
 
   deploy-frontend:
@@ -278,7 +277,6 @@ jobs:
             cd frontend
             aws s3 cp ./dist s3://udapeople-${CIRCLE_WORKFLOW_ID:0:7} --recursive
       - destroy-env
-          when: on_fail
       - revert-migrations
                  
   deploy-backend:
@@ -316,7 +314,6 @@ jobs:
           command: |
             ansible-playbook -i .circleci/ansible/inventory.txt .circleci/ansible/deploy-backend.yml
       - destroy-env
-          when: on_fail
       - revert-migrations
 
   smoke-test:
@@ -355,7 +352,6 @@ jobs:
             echo "SMOKE TEST EXIT STATUS: $STATUS"
             exit $STATUS
       - destroy-env
-          when: on_fail
       - revert-migrations
 
   cloudfront-update:
@@ -388,7 +384,6 @@ jobs:
           paths:
             - project/.circleci/oldstackid.txt
       - destroy-env
-          when: on_fail
       - revert-migrations
 
   cleanup:
@@ -406,8 +401,12 @@ jobs:
           command: |
             export OldWorkflowID=`cat ./.circleci/oldstackid.txt`
             echo "OLD STACK ID FOR DELETION: $OldWorkflowID"
-      - destroy-env:
-          workflow-id: $OldWorkflowID
+      - run:
+          name: AWS cleanup
+          command: |
+            aws s3 rb s3://udapeople-$OldWorkflowID --force
+            aws cloudformation delete-stack --stack-name "backend-infra-$OldWorkflowID"
+            aws cloudformation delete-stack --stack-name "frontend-infra-$OldWorkflowID"
 
 workflows:
   default:
