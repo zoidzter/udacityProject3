@@ -372,8 +372,9 @@ jobs:
           name: Update cloudfront distribution
           command: |
             aws cloudformation update-stack \
-              --template-file .circleci/files/cloudfront.yml --stack-name=udapeople-cloudfront \
-              --parameter-overrides WorkflowID="${CIRCLE_WORKFLOW_ID:0:7}" --tags project=udapeople
+                --use-previous-template \
+                --stack-name project3primer \
+                --parameters ParameterKey=WorkflowID,ParameterValue=${CIRCLE_WORKFLOW_ID:0:7},UsePreviousValue=false
       - run:
           name: "output URL"
           command: echo "udapeople-${CIRCLE_WORKFLOW_ID:0:7}.s3.amazonaws.com"
