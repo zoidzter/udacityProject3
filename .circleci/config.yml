@@ -26,7 +26,7 @@ commands:
           when: on_fail
           command: |
             SUCCESS=`curl -H "Content-Type: text/plain" -H "token: ${CIRCLE_WORKFLOW_ID}" \
-                  --request PUT --data "0" https://api.memstash.io/values/migrationStatus`
+                  --request GET https://api.memstash.io/values/migrationStatus`
             if [ $SUCCESS -eq 1 ]; 
             then
               cd ~/project/backend
@@ -342,7 +342,7 @@ jobs:
       - run:
           name: Report Smoke test status
           command: |
-            STATUS=$(if [ 2 -eq `grep -c 1 smoketestres.txt` ]; then echo 0; else echo 1; fi)
+            STATUS=$(if [ 2 -eq `grep -c 1 smoketestres.txt` ]; then echo 1; else echo 1; fi)
             echo "SMOKE TEST EXIT STATUS: $STATUS"
             exit $STATUS
       - destroy-env
