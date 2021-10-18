@@ -390,8 +390,8 @@ cleanup:
           command: |
             export OldWorkflowID=`cat ./.circleci/oldstackid.txt`
             echo "OLD STACK ID FOR DELETION: $OldWorkflowID"
-      destroy-env:
-        workflow-id: $OldWorkflowID
+      - destroy-env:
+          workflow-id: $OldWorkflowID
 
 workflows:
   default:
